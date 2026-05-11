@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  
+}
+
+model Driver {
+  id                  String    @id @default(cuid())
+  name                String
+  phone               String
+  currentRego         String
+  weeklyRent          Decimal
+  startDate           DateTime
+  isActive            Boolean   @default(true)
+  notes               String?
+  paymentStatus       String    @default("pending")
+  lastPaymentDate     DateTime?
+  lastPaymentAmount   Decimal?
+  amountOwed          Decimal   @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  payments            Payment[]
+  reminders           Reminder[]
+}
+
+model Car {
+  id               String    @id @default(cuid())
+  rego             String    @unique
+  make             String
+  model            String
+  year             Int
+  colour           String
+  regoExpiry       DateTime
+  bhslExpiry       DateTime?
+  bhslNumber       String?
+  ctpClass         Int       @default(4)
+  weeklyRent       Decimal
+  assignedDriverId String?
+  batch            Int?
+  isPersonal       Boolean   @default(false)
+  purchasePrice    Decimal?
+  regoStatus       String    @default("ok")
+  bhslStatus       String    @default("ok")
+  createdAt        DateTime  @default(now())
+}
+
+model Payment {
+  id             String    @id @default(cuid())
+  driverId       String
+  rego           String
+  amount         Decimal
+  expectedAmount Decimal
+  dueDate        DateTime
+  paidDate       DateTime?
+  weekNumber     Int
+  year           Int
+  status         String    @default("pending")
+  notes          String?
+  createdAt      DateTime  @default(now())
+
+  driver         Driver    @relation(fields: [driverId], references: [id])
+}
+
+model BankTransaction {
+  id               String   @id @default(cuid())
+  uploadBatchId    String
+  date             DateTime
+  description      String
+  reference        String?
+  amount           Decimal
+  balance          Decimal?
+  matchStatus      String   @default("unmatched")
+  matchedDriverId  String?
+  matchedDriverName String?
+  isManualOverride Boolean  @default(false)
+  paymentMethod    String   @default("unknown")
+  createdAt        DateTime @default(now())
+
+  uploadBatch      UploadBatch @relation(fields: [uploadBatchId], references: [id])
+}
+
+model UploadBatch {
+  id             String   @id @default(cuid())
+  filename       String
+  uploadedAt     DateTime @default(now())
+  rowCount       Int
+  dateRangeStart DateTime
+  dateRangeEnd   DateTime
+  matchedCount   Int      @default(0)
+  unmatchedCount Int      @default(0)
+  totalCredits   Decimal  @default(0)
+
+  transactions   BankTransaction[]
+}
+
+model Reminder {
+  id          String   @id @default(cuid())
+  driverId    String
+  type        String
+  messageBody String
+  status      String   @default("pending")
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  driver      Driver   @relation(fields: [driverId], references: [id])
+}
