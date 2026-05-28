@@ -1,29 +1,37 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // FleetTrack — Global State Store (Zustand)
+// Connected to Supabase via API routes
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { create } from 'zustand';
 import { Driver, BankTransaction, UploadBatch, ReminderMessage } from '@/lib/types';
-import { DRIVERS, CARS, MOCK_TRANSACTIONS, REMINDERS_QUEUE } from '@/lib/data/seed';
+import { REMINDERS_QUEUE, CARS } from '@/lib/data/seed';
 
-export type NavPage = 'dashboard' | 'drivers' | 'fleet' | 'statements' | 'reconcile' | 'reminders' | 'reports';
+export type NavPage = 'dashboard' | 'drivers' | 'fleet' | 'statements' | 'reconcile' | 'reminders' | 'reports' | 'contracts';
 
 interface FleetStore {
   // ── Navigation
   activePage: NavPage;
   setActivePage: (page: NavPage) => void;
 
-  // ── Drivers (full CRUD)
-  drivers: Driver[];
-  addDriver: (driver: Omit<Driver, 'id'>) => void;
-  updateDriver: (id: string, updates: Partial<Driver>) => void;
-  deleteDriver: (id: string) => void;
+  // ── Loading
+  isLoading: boolean;
+  error: string | null;
 
-  // ── Transactions (from CSV uploads)
+  // ── Drivers
+  drivers: Driver[];
+  fetchDrivers: () => Promise<void>;
+  addDriver: (driver: Omit<Driver, 'id'>) => Promise<void>;
+  updateDriver: (id: string, updates: Partial<Driver>) => Promise<void>;
+  deleteDriver: (id: string) => Promise<void>;
+
+  // ── Transactions
   transactions: BankTransaction[];
   uploadBatches: UploadBatch[];
-  addTransactions: (txns: BankTransaction[], batch: UploadBatch) => void;
-  updateTransactionMatch: (txId: string, driverId: string | undefined, status: BankTransaction['matchStatus']) => void;
+  fetchTransactions: () => Promise<void>;
+  fetchBatches: () => Promise<void>;
+  addTransactions: (txns: BankTransaction[], batch: UploadBatch) => Promise<void>;
+  updateTransactionMatch: (txId: string, driverId: string | undefined, status: BankTransaction['matchStatus']) => Promise<void>;
 
   // ── Reminders
   reminders: ReminderMessage[];
@@ -36,65 +44,137 @@ interface FleetStore {
   setEditingDriverId: (id: string | null) => void;
 }
 
-let driverIdCounter = 100;
-
 export const useFleetStore = create<FleetStore>((set, get) => ({
   // ── Navigation
   activePage: 'dashboard',
   setActivePage: (page) => set({ activePage: page }),
 
-  // ── Drivers — seeded from real spreadsheet data
-  drivers: DRIVERS,
+  // ── Loading
+  isLoading: false,
+  error: null,
 
-  addDriver: (driver) => set((s) => ({
-    drivers: [...s.drivers, { ...driver, id: `drv_${++driverIdCounter}` }],
-  })),
+  // ── Drivers
+  drivers: [],
 
-  updateDriver: (id, updates) => set((s) => ({
-    drivers: s.drivers.map(d => d.id === id ? { ...d, ...updates } : d),
-  })),
+  fetchDrivers: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetch('/api/drivers');
+      if (!res.ok) throw new Error('Failed to fetch drivers');
+      const data = await res.json();
+      set({ drivers: data, isLoading: false });
+    } catch (error) {
+      set({ error: String(error), isLoading: false });
+    }
+  },
 
-  deleteDriver: (id) => set((s) => ({
-    drivers: s.drivers.filter(d => d.id !== id),
-  })),
+  addDriver: async (driver) => {
+    try {
+      const res = await fetch('/api/drivers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(driver),
+      });
+      if (!res.ok) throw new Error('Failed to create driver');
+      const newDriver = await res.json();
+      set(s => ({ drivers: [...s.drivers, newDriver] }));
+    } catch (error) {
+      set({ error: String(error) });
+      throw error;
+    }
+  },
 
-  // ── Transactions — pre-seeded with this week's mock data
-  transactions: MOCK_TRANSACTIONS as BankTransaction[],
+  updateDriver: async (id, updates) => {
+    try {
+      const res = await fetch(`/api/drivers/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error('Failed to update driver');
+      const updated = await res.json();
+      set(s => ({ drivers: s.drivers.map(d => d.id === id ? { ...d, ...updated } : d) }));
+    } catch (error) {
+      set({ error: String(error) });
+      throw error;
+    }
+  },
 
-  uploadBatches: [{
-    id: 'batch_001',
-    filename: 'bank_statement_may2026.csv',
-    uploadedAt: '2026-05-11T09:00:00',
-    rowCount: 12,
-    dateRangeStart: '2026-05-04',
-    dateRangeEnd: '2026-05-10',
-    matchedCount: 10,
-    unmatchedCount: 2,
-    totalCredits: 3255,
-  }],
+  deleteDriver: async (id) => {
+    try {
+      const res = await fetch(`/api/drivers/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete driver');
+      set(s => ({ drivers: s.drivers.map(d => d.id === id ? { ...d, isActive: false } : d) }));
+    } catch (error) {
+      set({ error: String(error) });
+    }
+  },
 
-  addTransactions: (txns, batch) => set((s) => ({
-    transactions: [...s.transactions, ...txns],
-    uploadBatches: [batch, ...s.uploadBatches],
-  })),
+  // ── Transactions
+  transactions: [],
+  uploadBatches: [],
 
-  updateTransactionMatch: (txId, driverId, status) => set((s) => {
-    const driver = driverId ? s.drivers.find(d => d.id === driverId) : undefined;
-    return {
-      transactions: s.transactions.map(t =>
-        t.id === txId
-          ? { ...t, matchStatus: status, matchedDriverId: driverId, matchedDriverName: driver?.name, isManualOverride: true }
-          : t
-      ),
-    };
-  }),
+  fetchTransactions: async () => {
+    try {
+      const res = await fetch('/api/transactions');
+      if (!res.ok) throw new Error('Failed to fetch transactions');
+      const data = await res.json();
+      set({ transactions: data });
+    } catch (error) {
+      set({ error: String(error) });
+    }
+  },
+
+  fetchBatches: async () => {
+    try {
+      const res = await fetch('/api/statements');
+      if (!res.ok) throw new Error('Failed to fetch batches');
+      const data = await res.json();
+      set({ uploadBatches: data });
+    } catch (error) {
+      set({ error: String(error) });
+    }
+  },
+
+  addTransactions: async (txns, batch) => {
+    try {
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactions: txns, batch }),
+      });
+      if (!res.ok) throw new Error('Failed to save transactions');
+      set(s => ({ transactions: [...s.transactions, ...txns], uploadBatches: [batch, ...s.uploadBatches] }));
+    } catch (error) {
+      set(s => ({ transactions: [...s.transactions, ...txns], uploadBatches: [batch, ...s.uploadBatches], error: String(error) }));
+    }
+  },
+
+  updateTransactionMatch: async (txId, driverId, status) => {
+    try {
+      const res = await fetch(`/api/transactions/${txId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchedDriverId: driverId, matchStatus: status }),
+      });
+      if (!res.ok) throw new Error('Failed to update transaction');
+      const updated = await res.json();
+      set(s => ({ transactions: s.transactions.map(t => t.id === txId ? { ...t, ...updated } : t) }));
+    } catch (error) {
+      const driver = get().drivers.find(d => d.id === driverId);
+      set(s => ({
+        transactions: s.transactions.map(t =>
+          t.id === txId ? { ...t, matchStatus: status, matchedDriverId: driverId, matchedDriverName: driver?.name, isManualOverride: true } : t
+        ),
+        error: String(error),
+      }));
+    }
+  },
 
   // ── Reminders
   reminders: REMINDERS_QUEUE as ReminderMessage[],
-  markReminderSent: (id) => set((s) => ({
-    reminders: s.reminders.map(r =>
-      r.id === id ? { ...r, status: 'sent', sentAt: new Date().toISOString() } : r
-    ),
+  markReminderSent: (id) => set(s => ({
+    reminders: s.reminders.map(r => r.id === id ? { ...r, status: 'sent', sentAt: new Date().toISOString() } : r),
   })),
 
   // ── UI state
@@ -104,29 +184,17 @@ export const useFleetStore = create<FleetStore>((set, get) => ({
   setEditingDriverId: (id) => set({ editingDriverId: id }),
 }));
 
-// ─── Derived selectors ────────────────────────────────────────────────────────
-
-export const selectRentalCars = () =>
-  CARS.filter(c => !c.isPersonal);
-
-export const selectPersonalCars = () =>
-  CARS.filter(c => c.isPersonal);
+// ─── Selectors ────────────────────────────────────────────────────────────────
 
 export const selectFleetCars = () => CARS;
-
+export const selectRentalCars = () => CARS.filter(c => !c.isPersonal);
+export const selectPersonalCars = () => CARS.filter(c => c.isPersonal);
 export const selectComplianceAlerts = () =>
   CARS.filter(c => !c.isPersonal && (
     c.regoStatus === 'expired' || c.regoStatus === 'due_today' ||
     c.bhslStatus === 'expired' || c.bhslStatus === 'warning'
   ));
-
-export const selectCurrentWeekRevenue = (transactions: BankTransaction[]) =>
-  transactions
-    .filter(t => t.amount > 0 && t.uploadBatchId === 'batch_001')
-    .reduce((s, t) => s + t.amount, 0);
-
 export const selectOverdueDrivers = (drivers: Driver[]) =>
   drivers.filter(d => d.isActive && (d.paymentStatus === 'overdue' || d.paymentStatus === 'partial'));
-
 export const selectTotalOutstanding = (drivers: Driver[]) =>
   drivers.filter(d => d.isActive).reduce((s, d) => s + (d.amountOwed ?? 0), 0);

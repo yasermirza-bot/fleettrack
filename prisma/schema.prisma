@@ -10,16 +10,34 @@ datasource db {
 model Driver {
   id                  String    @id @default(cuid())
   name                String
+  givenName           String    @default("")
+  surname             String    @default("")
+  dateOfBirth         String    @default("")
   phone               String
+  email               String    @default("")
+  address             String    @default("")
+  licenceNumber       String    @default("")
+  licenceExpiry       String    @default("")
+  licenceState        String    @default("QLD")
+  uberDriverId        String    @default("")
+  abn                 String    @default("")
+  emergencyName       String    @default("")
+  emergencyPhone      String    @default("")
+  emergencyRelation   String    @default("")
+  bondAmount          Decimal   @default(0)
+  bondPaid            Boolean   @default(false)
+  bondPaidDate        String    @default("")
+  bondReceiptNumber   String    @default("")
   currentRego         String
   weeklyRent          Decimal
-  startDate           DateTime
+  assignmentStartDate String    @default("")
   isActive            Boolean   @default(true)
-  notes               String?
   paymentStatus       String    @default("pending")
   lastPaymentDate     DateTime?
   lastPaymentAmount   Decimal?
   amountOwed          Decimal   @default(0)
+  notes               String?
+  startDate           DateTime  @default(now())
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 

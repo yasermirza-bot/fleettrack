@@ -2,89 +2,53 @@
 
 import { useState } from 'react';
 import { useFleetStore } from '@/store/fleetStore';
+import { fmtCurrency, fmtDate } from '@/lib/utils/csv';
+import DriverProfileModal from './DriverProfileModal';
 import { Driver } from '@/lib/types';
-import { fmtCurrency, fmtDate, generateWhatsAppMessage } from '@/lib/utils/csv';
-import { CARS } from '@/lib/data/seed';
 
-type DriverForm = {
-  name: string; phone: string; currentRego: string;
-  weeklyRent: string; startDate: string; notes: string;
-};
-
-const BLANK: DriverForm = { name: '', phone: '', currentRego: '', weeklyRent: '', startDate: '', notes: '' };
+const displayName = (d: any) =>
+  `${d.givenName ?? ''} ${d.surname ?? ''}`.trim() || d.name || 'Unknown';
 
 export default function DriversPage() {
-  const { drivers, addDriver, updateDriver, deleteDriver,
-          addDriverModalOpen, setAddDriverModalOpen } = useFleetStore();
-
-  const [form, setForm] = useState<DriverForm>(BLANK);
-  const [editId, setEditId] = useState<string | null>(null);
+  const { drivers, deleteDriver } = useFleetStore();
   const [search, setSearch] = useState('');
-  const [waPreview, setWaPreview] = useState<{ msg: string; name: string } | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [isNew, setIsNew] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const openAdd = () => { setForm(BLANK); setEditId(null); setAddDriverModalOpen(true); };
-  const openEdit = (d: Driver) => {
-    setForm({ name: d.name, phone: d.phone, currentRego: d.currentRego, weeklyRent: String(d.weeklyRent), startDate: d.startDate, notes: d.notes ?? '' });
-    setEditId(d.id);
-    setAddDriverModalOpen(true);
-  };
-  const closeModal = () => { setAddDriverModalOpen(false); setEditId(null); setForm(BLANK); };
-
-  const handleSave = () => {
-    if (!form.name.trim() || !form.currentRego.trim()) return;
-    const payload = {
-      name: form.name.trim(),
-      phone: form.phone.trim(),
-      currentRego: form.currentRego.trim().toUpperCase(),
-      weeklyRent: parseFloat(form.weeklyRent) || 0,
-      startDate: form.startDate,
-      notes: form.notes,
-      isActive: true,
-      paymentStatus: 'pending' as const,
-      amountOwed: 0,
-    };
-    if (editId) updateDriver(editId, payload);
-    else addDriver(payload);
-    closeModal();
-  };
-
-  const sendReminder = (d: Driver) => {
-    const car = CARS.find(c => c.rego === d.currentRego);
-    if (!car) return;
-    const due = d.weeklyRent;
-    const msg = generateWhatsAppMessage(d, car, due, '5 May 2026');
-    setWaPreview({ msg, name: d.name });
-  };
+  const openNew = () => { setSelectedDriver(null); setIsNew(true); setShowModal(true); };
+  const openEdit = (d: Driver) => { setSelectedDriver(d); setIsNew(false); setShowModal(true); };
 
   const filtered = drivers.filter(d => {
-    const matchSearch = !search || d.name.toLowerCase().includes(search.toLowerCase()) || d.currentRego.toLowerCase().includes(search.toLowerCase());
+    const name = displayName(d).toLowerCase();
+    const matchSearch = !search || name.includes(search.toLowerCase()) || (d.currentRego ?? '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' || d.paymentStatus === filterStatus;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && d.isActive;
   });
 
-  const totalWeeklyRent = drivers.filter(d => d.isActive).reduce((s, d) => s + d.weeklyRent, 0);
   const totalOutstanding = drivers.filter(d => d.isActive).reduce((s, d) => s + (d.amountOwed ?? 0), 0);
 
   return (
     <div>
-      {/* Stats row */}
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
           <div className="kpi-label">Active Drivers</div>
           <div className="kpi-value">{drivers.filter(d => d.isActive).length}</div>
-          <div className="kpi-sub">of {drivers.length} total</div>
+          <div className="kpi-sub">in fleet</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">Target Weekly Revenue</div>
-          <div className="kpi-value">{fmtCurrency(totalWeeklyRent)}</div>
-          <div className="kpi-sub">from active drivers</div>
+          <div className="kpi-label">Weekly Target</div>
+          <div className="kpi-value">{fmtCurrency(drivers.filter(d => d.isActive).reduce((s, d) => s + d.weeklyRent, 0))}</div>
+          <div className="kpi-sub">expected per week</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">Total Outstanding</div>
-          <div className="kpi-value" style={{ color: totalOutstanding > 0 ? '#b91c1c' : '#15803d' }}>{fmtCurrency(totalOutstanding)}</div>
-          <div className="kpi-sub">{drivers.filter(d => (d.amountOwed ?? 0) > 0).length} drivers behind</div>
+          <div className="kpi-label">Outstanding</div>
+          <div className="kpi-value" style={{ color: totalOutstanding > 0 ? '#b91c1c' : '#15803d' }}>
+            {fmtCurrency(totalOutstanding)}
+          </div>
+          <div className="kpi-sub">{drivers.filter(d => (d.amountOwed ?? 0) > 0).length} behind</div>
         </div>
         <div className="kpi-card">
           <div className="kpi-label">Paid This Week</div>
@@ -96,196 +60,100 @@ export default function DriversPage() {
       <div className="card">
         <div className="card-header">
           <span className="card-title">Drivers ({filtered.length})</span>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {/* Status filter */}
-            <select
-              value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
-              className="form-input"
-              style={{ width: 'auto', fontSize: 12, padding: '5px 10px' }}
-            >
+          <div style={{ display: 'flex', gap: 8 }}>
+            <select className="form-input" style={{ width: 'auto', fontSize: 12, padding: '5px 10px' }}
+              value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
               <option value="all">All status</option>
               <option value="paid">Paid</option>
               <option value="partial">Partial</option>
               <option value="overdue">Overdue</option>
             </select>
-            <input
-              className="form-input"
-              style={{ width: 200, fontSize: 12 }}
-              placeholder="Search name or rego…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <button className="btn btn-primary btn-sm" onClick={openAdd}>+ Add Driver</button>
+            <input className="form-input" style={{ width: 200, fontSize: 12 }}
+              placeholder="Search name or rego…" value={search} onChange={e => setSearch(e.target.value)} />
+            <button className="btn btn-primary btn-sm" onClick={openNew}>+ Add Driver</button>
           </div>
         </div>
 
         <table className="data-table">
           <thead>
             <tr>
-              <th>Driver</th>
-              <th>Car Rego</th>
-              <th>Weekly Rent</th>
-              <th>Last Payment</th>
-              <th>Amount Owed</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>Driver</th><th>Licence</th><th>Car</th><th>Rent</th>
+              <th>Bond</th><th>Last Payment</th><th>Owed</th><th>Status</th><th></th>
             </tr>
           </thead>
           <tbody>
             {filtered.map(d => (
-              <tr key={d.id}>
+              <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => openEdit(d)}>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                     <div className="driver-av" style={{
                       background: d.paymentStatus === 'overdue' ? '#fef2f2' : d.paymentStatus === 'partial' ? '#fffbeb' : '#eff6ff',
                       color: d.paymentStatus === 'overdue' ? '#b91c1c' : d.paymentStatus === 'partial' ? '#b45309' : '#1d4ed8',
                     }}>
-                      {d.name.slice(0, 2).toUpperCase()}
+                      {displayName(d).slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 500 }}>{d.name}</div>
+                      <div style={{ fontWeight: 500 }}>{displayName(d)}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>{d.phone}</div>
                     </div>
                   </div>
                 </td>
-                <td><span className="mono" style={{ fontWeight: 600 }}>{d.currentRego}</span></td>
-                <td className="mono">${d.weeklyRent}/wk</td>
-                <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
-                  {fmtDate(d.lastPaymentDate ?? '')}
-                  {d.lastPaymentAmount ? <span className="mono" style={{ marginLeft: 4, color: 'var(--text-hint)' }}>${d.lastPaymentAmount}</span> : null}
-                </td>
                 <td>
-                  {(d.amountOwed ?? 0) > 0
-                    ? <span className="mono" style={{ color: '#b91c1c', fontWeight: 600 }}>{fmtCurrency(d.amountOwed ?? 0)}</span>
-                    : <span style={{ color: '#15803d' }}>—</span>
+                  <div className="mono" style={{ fontSize: 12 }}>{(d as any).licenceNumber || '—'}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-hint)' }}>
+                    {(d as any).licenceExpiry ? `exp ${fmtDate((d as any).licenceExpiry)}` : ''}
+                  </div>
+                </td>
+                <td><span className="mono" style={{ fontWeight: 600 }}>{d.currentRego || '—'}</span></td>
+                <td className="mono">${d.weeklyRent}/wk</td>
+                <td>
+                  {(d as any).bondAmount > 0
+                    ? <span className={`badge ${(d as any).bondPaid ? 'badge-green' : 'badge-amber'}`}>
+                        ${(d as any).bondAmount} {(d as any).bondPaid ? '✓' : 'unpaid'}
+                      </span>
+                    : <span style={{ color: 'var(--text-hint)' }}>—</span>
                   }
                 </td>
-                <td>
-                  <span className={`badge ${
-                    d.paymentStatus === 'paid'    ? 'badge-green' :
-                    d.paymentStatus === 'partial' ? 'badge-amber' :
-                    d.paymentStatus === 'overdue' ? 'badge-red'   : 'badge-gray'
-                  }`}>
-                    {d.paymentStatus ?? 'unknown'}
-                  </span>
+                <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{fmtDate(d.lastPaymentDate ?? '')}</td>
+                <td className="mono" style={{ color: (d.amountOwed ?? 0) > 0 ? '#b91c1c' : '#15803d' }}>
+                  {(d.amountOwed ?? 0) > 0 ? fmtCurrency(d.amountOwed ?? 0) : '—'}
                 </td>
                 <td>
+                  <span className={`badge ${d.paymentStatus === 'paid' ? 'badge-green' : d.paymentStatus === 'partial' ? 'badge-amber' : d.paymentStatus === 'overdue' ? 'badge-red' : 'badge-gray'}`}>
+                    {d.paymentStatus ?? 'pending'}
+                  </span>
+                </td>
+                <td onClick={e => e.stopPropagation()}>
                   <div style={{ display: 'flex', gap: 5 }}>
-                    <button
-                      className="btn-icon wa" title="Send WhatsApp reminder"
-                      onClick={() => sendReminder(d)}
-                    >💬</button>
-                    <button
-                      className="btn-icon" title="Edit driver"
-                      onClick={() => openEdit(d)}
-                    >✏️</button>
-                    <button
-                      className="btn-icon danger" title="Remove driver"
-                      onClick={() => setConfirmDelete(d.id)}
-                    >🗑</button>
+                    <button className="btn-icon" onClick={() => openEdit(d)}>✏️</button>
+                    <button className="btn-icon danger" onClick={() => setConfirmDelete(d.id)}>🗑</button>
                   </div>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-hint)', padding: 32 }}>No drivers match your search.</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-hint)', padding: 32 }}>No drivers found.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* ── Add/Edit Driver Modal ── */}
-      {addDriverModalOpen && (
-        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeModal(); }}>
-          <div className="modal">
-            <div className="modal-header">
-              <span className="modal-title">{editId ? 'Edit Driver' : 'Add New Driver'}</span>
-              <button className="btn-icon" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Full Name *</label>
-                  <input className="form-input" placeholder="e.g. Lakhveer Dhaliwal" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Phone (WhatsApp)</label>
-                  <input className="form-input" placeholder="+61 4XX XXX XXX" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Car Rego *</label>
-                  <input className="form-input" placeholder="e.g. 725KW9" value={form.currentRego} onChange={e => setForm(f => ({ ...f, currentRego: e.target.value }))} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Weekly Rent ($)</label>
-                  <input className="form-input" type="number" placeholder="320" value={form.weeklyRent} onChange={e => setForm(f => ({ ...f, weeklyRent: e.target.value }))} />
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Start Date</label>
-                <input className="form-input" type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Notes</label>
-                <input className="form-input" placeholder="Bond paid, pays via PayID, etc." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-outline btn-sm" onClick={closeModal}>Cancel</button>
-              <button className="btn btn-primary btn-sm" onClick={handleSave}>
-                {editId ? 'Save Changes' : 'Add Driver'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {showModal && (
+        <DriverProfileModal driver={selectedDriver} isNew={isNew} onClose={() => setShowModal(false)} />
       )}
 
-      {/* ── Confirm Delete Modal ── */}
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
           <div className="modal" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">Remove Driver?</span>
-            </div>
+            <div className="modal-header"><span className="modal-title">Remove Driver?</span></div>
             <div className="modal-body">
               <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-                This will remove <strong>{drivers.find(d => d.id === confirmDelete)?.name}</strong> from your fleet. Payment history will be retained.
+                This will deactivate <strong>{displayName(drivers.find(d => d.id === confirmDelete)!)}</strong>. History retained.
               </p>
             </div>
             <div className="modal-footer">
               <button className="btn btn-outline btn-sm" onClick={() => setConfirmDelete(null)}>Cancel</button>
-              <button className="btn btn-danger btn-sm" onClick={() => { deleteDriver(confirmDelete); setConfirmDelete(null); }}>
-                Remove Driver
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── WhatsApp Preview Modal ── */}
-      {waPreview && (
-        <div className="modal-overlay" onClick={() => setWaPreview(null)}>
-          <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">💬 WhatsApp Reminder — {waPreview.name}</span>
-              <button className="btn-icon" onClick={() => setWaPreview(null)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div style={{ background: '#dcfce7', borderRadius: '0 12px 12px 12px', padding: '12px 14px', fontSize: 13, lineHeight: 1.65, color: '#14532d', border: '1px solid #86efac', whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-                {waPreview.msg}
-              </div>
-              <p style={{ fontSize: 11, color: 'var(--text-hint)', marginTop: 10 }}>
-                ℹ️ Actual sending via Twilio or Meta WhatsApp Cloud API (configured in backend settings).
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-outline btn-sm" onClick={() => setWaPreview(null)}>Close</button>
-              <button className="btn btn-wa btn-sm" onClick={() => { alert('WhatsApp API not yet connected — see backend architecture docs.'); setWaPreview(null); }}>
-                📤 Send via WhatsApp
-              </button>
+              <button className="btn btn-danger btn-sm" onClick={() => { deleteDriver(confirmDelete); setConfirmDelete(null); }}>Remove</button>
             </div>
           </div>
         </div>
