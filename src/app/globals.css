@@ -589,12 +589,25 @@ html, body {
 }
 
 @media (max-width: 768px) {
-  .sidebar { width: 64px; }
+  /* Desktop sidebar hidden on mobile — we use slide-in instead */
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
+
+  /* Mobile slide-in sidebar shows full width with text */
+  .sidebar {
+    width: 260px !important;
+  }
   .nav-label, .brand-title, .brand-sub, .sidebar-section-label,
-  .sidebar-footer .footer-text { display: none; }
-  .nav-item { justify-content: center; padding: 10px; }
-  .sidebar-brand { justify-content: center; }
-  .page-body { padding: 16px; }
-  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .sidebar-footer .footer-text { display: block; }
+  .nav-item { justify-content: flex-start; padding: 10px 14px; }
+  .sidebar-brand { justify-content: flex-start; }
+
+  /* Layout */
+  .page-body { padding: 14px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
+
+  /* Tables */
+  .card { overflow-x: auto; }
+  .data-table { min-width: 600px; }
 }
