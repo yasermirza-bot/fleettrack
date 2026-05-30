@@ -10,6 +10,7 @@ import ReconcilePage from '@/components/payments/ReconcilePage';
 import RemindersPage from '@/components/reminders/RemindersPage';
 import ReportsPage from '@/components/dashboard/ReportsPage';
 import ContractsPage from '@/components/contracts/ContractsPage';
+import SettingsPage from '@/components/settings/SettingsPage';
 
 const NAV = [
   { id: 'dashboard',  label: 'Dashboard',      icon: '⊞', section: 'overview' },
@@ -20,28 +21,20 @@ const NAV = [
   { id: 'reconcile',  label: 'Reconciliation',  icon: '⟷', section: 'payments' },
   { id: 'reminders',  label: 'Reminders',       icon: '💬', section: 'payments' },
   { id: 'reports',    label: 'Reports & ROI',   icon: '📊', section: 'analytics' },
+  { id: 'settings',   label: 'Settings',        icon: '⚙️', section: 'analytics' },
 ] as const;
 
 const PAGE_TITLES: Record<string, string> = {
-  dashboard:  'Dashboard',
-  drivers:    'Driver Management',
-  fleet:      'Fleet & Cars',
-  contracts:  'Contracts',
-  statements: 'Bank Statements',
-  reconcile:  'Payment Reconciliation',
-  reminders:  'WhatsApp Reminders',
-  reports:    'Reports & ROI',
+  dashboard: 'Dashboard', drivers: 'Driver Management', fleet: 'Fleet & Cars',
+  contracts: 'Contracts', statements: 'Bank Statements', reconcile: 'Payment Reconciliation',
+  reminders: 'WhatsApp Reminders', reports: 'Reports & ROI', settings: 'Settings',
 };
 
 export default function Home() {
-  const {
-    activePage, setActivePage, drivers, reminders, setAddDriverModalOpen,
-    fetchDrivers, fetchTransactions, fetchBatches, isLoading,
-  } = useFleetStore();
-
+    const { activePage, setActivePage, drivers, reminders, setAddDriverModalOpen,
+          fetchDrivers, fetchTransactions, fetchBatches, isLoading } = useFleetStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Load all data from Supabase on startup
   useEffect(() => {
     fetchDrivers();
     fetchTransactions();
@@ -75,9 +68,12 @@ export default function Home() {
       case 'reconcile':  return <ReconcilePage />;
       case 'reminders':  return <RemindersPage />;
       case 'reports':    return <ReportsPage />;
+      case 'settings':   return <SettingsPage />;
       default:           return <Dashboard />;
     }
   };
+
+const userInitials = 'JD';
 
   const SidebarContent = () => (
     <>
@@ -106,7 +102,6 @@ export default function Home() {
                   key={item.id}
                   className={`nav-item ${activePage === item.id ? 'active' : ''}`}
                   onClick={() => handleNavClick(item.id)}
-                  aria-current={activePage === item.id ? 'page' : undefined}
                 >
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-label">{item.label}</span>
@@ -119,72 +114,52 @@ export default function Home() {
       })}
 
       <div className="sidebar-footer">
-        <div className="avatar-circle">JD</div>
-        <div className="footer-text">
-          <div style={{ fontSize: 12, color: '#fff', fontWeight: 500 }}>Fleet Owner</div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Brisbane, QLD</div>
-        </div>
-      </div>
+  <div className="avatar-circle">JD</div>
+  <div className="footer-text">
+    <div style={{ fontSize: 12, color: '#fff', fontWeight: 500 }}>Fleet Owner</div>
+    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Brisbane, QLD</div>
+  </div>
+</div>
     </>
   );
 
   return (
     <div className="app-shell">
-      {/* Mobile overlay */}
       {mobileMenuOpen && (
-        <div
-          onClick={() => setMobileMenuOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }}
-        />
+        <div onClick={() => setMobileMenuOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} />
       )}
 
-      {/* Desktop sidebar */}
       <nav className="sidebar desktop-only" aria-label="Main navigation">
         <SidebarContent />
       </nav>
 
-      {/* Mobile sidebar */}
-      <nav
-        className="sidebar mobile-sidebar"
-        style={{
-          position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
-          transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.25s ease',
-        }}
-      >
+      <nav className="sidebar mobile-sidebar" style={{
+        position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
+        transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.25s ease',
+      }}>
         <SidebarContent />
       </nav>
 
       <div className="main">
         <header className="topbar">
-          <button
-            className="mobile-only btn-icon"
-            onClick={() => setMobileMenuOpen(true)}
-            style={{ marginRight: 8 }}
-          >☰</button>
-
+          <button className="mobile-only btn-icon" onClick={() => setMobileMenuOpen(true)} style={{ marginRight: 8 }}>☰</button>
           <h1 className="page-title">{PAGE_TITLES[activePage]}</h1>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {isLoading && (
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                ⟳ Loading...
-              </span>
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="desktop-only" style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'var(--surface-2)', borderRadius: 7,
               padding: '5px 12px', fontSize: 12, color: 'var(--text-secondary)',
               border: '1px solid var(--border)',
             }}>
-              📅 Week of 5 May 2026
+              📅 Wk 5 May 2026
             </div>
-            <button className="btn btn-primary btn-sm" onClick={() => setAddDriverModalOpen(true)}>
-              + Add Driver
-            </button>
+            <button className="btn btn-primary btn-sm" onClick={() => { setActivePage('drivers'); }}>
+  + Add Driver
+</button>
           </div>
         </header>
-
         <main className="page-body" id="main-content">
           {renderPage()}
         </main>

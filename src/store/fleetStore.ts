@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import { Driver, BankTransaction, UploadBatch, ReminderMessage } from '@/lib/types';
 import { REMINDERS_QUEUE, CARS } from '@/lib/data/seed';
 
-export type NavPage = 'dashboard' | 'drivers' | 'fleet' | 'statements' | 'reconcile' | 'reminders' | 'reports' | 'contracts';
+export type NavPage = 'dashboard' | 'drivers' | 'fleet' | 'statements' | 'reconcile' | 'reminders' | 'reports' | 'contracts' | 'settings';
 
 interface FleetStore {
   // ── Navigation

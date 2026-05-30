@@ -126,3 +126,46 @@ model Reminder {
 
   driver      Driver   @relation(fields: [driverId], references: [id])
 }
+
+model Contract {
+  id                   String    @id @default(cuid())
+  driverId             String?
+  driverSurname        String
+  driverGivenName      String
+  driverAddress        String    @default("")
+  driverEmail          String    @default("")
+  driverPhone          String    @default("")
+  driverLicense        String    @default("")
+  driverLicenseExpiry  String    @default("")
+  carRego              String
+  carModel             String    @default("")
+  carYear              Int       @default(2020)
+  weeklyRent           Decimal
+  minimumDuration      Int       @default(3)
+  insurancePolicyNumber String   @default("")
+  startDate            DateTime  @default(now())
+  guarantorName        String    @default("")
+  guarantorPhone       String    @default("")
+  guarantorEmail       String    @default("")
+  ownerName            String    @default("")
+  ownerAddress         String    @default("")
+  ownerPhone           String    @default("")
+  ownerEmail           String    @default("")
+  ownerCompany         String    @default("")
+  status               String    @default("draft")
+  signingToken         String    @unique
+  signedAt             DateTime?
+  signatureDataUrl     String?
+  signatureIp          String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  ownerSignatureDataUrl String?
+ownerSignedAt         DateTime?
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
