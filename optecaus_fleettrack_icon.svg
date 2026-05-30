@@ -1,0 +1,37 @@
+<svg width="100%" viewBox="0 0 380 420" role="img" style="" xmlns="http://www.w3.org/2000/svg">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">OptecAus FleetTrack app icon</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">A navy blue rounded square app icon with a white car silhouette and OA initials, suitable for use as a PWA home screen icon</desc>
+
+  <!-- Icon background -->
+  <rect x="90" y="20" width="200" height="200" rx="44" fill="#0f1e3d" style="fill:rgb(15, 30, 61);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Car body -->
+  <rect x="118" y="118" width="164" height="52" rx="8" fill="#ffffff" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Car roof -->
+  <path d="M148 118 Q158 88 192 84 Q208 82 222 84 Q250 88 252 118Z" fill="#ffffff" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Windshield cutout -->
+  <path d="M155 118 Q163 96 192 92 Q208 90 222 92 Q244 96 246 118Z" fill="#0f1e3d" style="fill:rgb(15, 30, 61);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Wheels -->
+  <circle cx="148" cy="170" r="18" fill="#0f1e3d" style="fill:rgb(15, 30, 61);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="148" cy="170" r="10" fill="#ffffff" opacity="0.3" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.3;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="252" cy="170" r="18" fill="#0f1e3d" style="fill:rgb(15, 30, 61);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="252" cy="170" r="10" fill="#ffffff" opacity="0.3" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.3;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Headlight -->
+  <rect x="274" y="128" width="12" height="8" rx="3" fill="#f0c040" style="fill:rgb(240, 192, 64);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Tail light -->
+  <rect x="114" y="128" width="12" height="8" rx="3" fill="#e05050" style="fill:rgb(224, 80, 80);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- App name below icon -->
+  <text x="190" y="262" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="var(--color-text-primary)" style="fill:rgb(20, 20, 19);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:18px;font-weight:700;text-anchor:middle;dominant-baseline:auto">OptecAus</text>
+  <text x="190" y="286" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="400" fill="var(--color-text-secondary)" style="fill:rgb(61, 61, 58);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:14px;font-weight:400;text-anchor:middle;dominant-baseline:auto">FleetTrack</text>
+
+  <!-- Divider -->
+  <line x1="100" y1="305" x2="280" y2="305" stroke="var(--color-border-tertiary)" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgba(31, 30, 29, 0.15);color:rgb(0, 0, 0);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Instructions -->
+  <text x="190" y="330" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="var(--color-text-secondary)" style="fill:rgb(61, 61, 58);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:auto">Save this icon to use as your PWA icon</text>
+  <text x="190" y="350" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="var(--color-text-secondary)" style="fill:rgb(61, 61, 58);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:12px;font-weight:400;text-anchor:middle;dominant-baseline:auto">Copy the SVG code below into your project</text>
+
+  <!-- Size indicators -->
+  <text x="190" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="var(--color-text-tertiary)" style="fill:rgb(115, 114, 108);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:11px;font-weight:400;text-anchor:middle;dominant-baseline:auto">Recommended: 192×192 and 512×512 PNG</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#0f1e3d"/>
+  
+  <!-- Car body -->
+  <rect x="96" y="296" width="320" height="104" rx="16" fill="#ffffff"/>
+  
+  <!-- Car roof -->
+  <path d="M160 296 Q180 216 248 204 Q272 200 296 204 Q368 216 376 296Z" fill="#ffffff"/>
+  
+  <!-- Windshield -->
+  <path d="M176 296 Q194 228 248 216 Q272 212 296 216 Q352 228 360 296Z" fill="#0f1e3d" opacity="0.85"/>
+  
+  <!-- Wheels -->
+  <circle cx="168" cy="400" r="44" fill="#0f1e3d"/>
+  <circle cx="168" cy="400" r="24" fill="#ffffff" opacity="0.25"/>
+  <circle cx="168" cy="400" r="10" fill="#ffffff" opacity="0.5"/>
+  
+  <circle cx="344" cy="400" r="44" fill="#0f1e3d"/>
+  <circle cx="344" cy="400" r="24" fill="#ffffff" opacity="0.25"/>
+  <circle cx="344" cy="400" r="10" fill="#ffffff" opacity="0.5"/>
+  
+  <!-- Headlight -->
+  <rect x="388" y="312" width="28" height="18" rx="6" fill="#f0c040"/>
+  
+  <!-- Tail light -->
+  <rect x="96" y="312" width="28" height="18" rx="6" fill="#e05050"/>
+
+  <!-- OA text top left -->
+  <text x="64" y="128" font-family="system-ui, Arial, sans-serif" font-size="96" font-weight="700" fill="#ffffff" opacity="0.15">OA</text>
+</svg>
