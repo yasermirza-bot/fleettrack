@@ -31,8 +31,8 @@ const PAGE_TITLES: Record<string, string> = {
 };
 
 export default function Home() {
-    const { activePage, setActivePage, drivers, reminders, setAddDriverModalOpen,
-          fetchDrivers, fetchTransactions, fetchBatches, isLoading } = useFleetStore();
+  const { activePage, setActivePage, drivers, reminders,
+          fetchDrivers, fetchTransactions, fetchBatches } = useFleetStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -73,36 +73,33 @@ export default function Home() {
     }
   };
 
-const userInitials = 'JD';
-
-  const SidebarContent = () => (
-    <>
-      <div className="sidebar-brand">
-        <div className="sidebar-logo">🚗</div>
-        <div>
-          <div className="brand-title">FleetTrack</div>
-          <div className="brand-sub">Rental Manager</div>
-        </div>
-        <button
-          className="mobile-only"
+  return (
+    <div className="app-shell">
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div
           onClick={() => setMobileMenuOpen(false)}
-          style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: 20, cursor: 'pointer', padding: '4px 8px' }}
-        >✕</button>
-      </div>
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }}
+        />
+      )}
 
-      {(['overview', 'payments', 'analytics'] as const).map(section => {
-        const items = NAV.filter(n => n.section === section);
-        return (
+      {/* Desktop sidebar */}
+      <nav className="sidebar desktop-only" aria-label="Main navigation">
+        <div className="sidebar-brand">
+          <div className="sidebar-logo">🚗</div>
+          <div>
+            <div className="brand-title">OptecAus</div>
+<div className="brand-sub">FleetTrack</div>
+          </div>
+        </div>
+        {(['overview', 'payments', 'analytics'] as const).map(section => (
           <div key={section} className="sidebar-section">
             <div className="sidebar-section-label">{section}</div>
-            {items.map(item => {
+            {NAV.filter(n => n.section === section).map(item => {
               const count = badgeCount(item.id);
               return (
-                <button
-                  key={item.id}
-                  className={`nav-item ${activePage === item.id ? 'active' : ''}`}
-                  onClick={() => handleNavClick(item.id)}
-                >
+                <button key={item.id} className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+                  onClick={() => handleNavClick(item.id)}>
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-label">{item.label}</span>
                   {count !== null && <span className="nav-badge">{count}</span>}
@@ -110,56 +107,81 @@ const userInitials = 'JD';
               );
             })}
           </div>
-        );
-      })}
+        ))}
+        <div className="sidebar-footer">
+          <div className="avatar-circle">JD</div>
+          <div className="footer-text">
+            <div style={{ fontSize: 12, color: '#fff', fontWeight: 500 }}>Fleet Owner</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Brisbane, QLD</div>
+          </div>
+        </div>
+      </nav>
 
-      <div className="sidebar-footer">
-  <div className="avatar-circle">JD</div>
-  <div className="footer-text">
-    <div style={{ fontSize: 12, color: '#fff', fontWeight: 500 }}>Fleet Owner</div>
-    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Brisbane, QLD</div>
-  </div>
-</div>
-    </>
-  );
-
-  return (
-    <div className="app-shell">
+      {/* Mobile sidebar — separate from desktop, only renders when open */}
       {mobileMenuOpen && (
-        <div onClick={() => setMobileMenuOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} />
+        <nav className="sidebar" style={{
+          position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
+          width: 'var(--sidebar-width, 240px)',
+        }} aria-label="Mobile navigation">
+          <div className="sidebar-brand">
+            <div className="sidebar-logo">🚗</div>
+            <div>
+              <div className="brand-title">OptecAus</div>
+<div className="brand-sub">FleetTrack</div>
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: 20, cursor: 'pointer', padding: '4px 8px' }}
+            >✕</button>
+          </div>
+          {(['overview', 'payments', 'analytics'] as const).map(section => (
+            <div key={section} className="sidebar-section">
+              <div className="sidebar-section-label">{section}</div>
+              {NAV.filter(n => n.section === section).map(item => {
+                const count = badgeCount(item.id);
+                return (
+                  <button key={item.id} className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+                    onClick={() => handleNavClick(item.id)}>
+                    <span className="nav-icon">{item.icon}</span>
+                    <span className="nav-label">{item.label}</span>
+                    {count !== null && <span className="nav-badge">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+          <div className="sidebar-footer">
+            <div className="avatar-circle">JD</div>
+            <div className="footer-text">
+              <div style={{ fontSize: 12, color: '#fff', fontWeight: 500 }}>Fleet Owner</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Brisbane, QLD</div>
+            </div>
+          </div>
+        </nav>
       )}
-
-      <nav className="sidebar desktop-only" aria-label="Main navigation">
-        <SidebarContent />
-      </nav>
-
-      <nav className="sidebar mobile-sidebar" style={{
-        position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
-        transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.25s ease',
-      }}>
-        <SidebarContent />
-      </nav>
 
       <div className="main">
         <header className="topbar">
-          <button className="mobile-only btn-icon" onClick={() => setMobileMenuOpen(true)} style={{ marginRight: 8 }}>☰</button>
+          {/* Mobile hamburger */}
+          <button
+            className="mobile-only btn-icon"
+            onClick={() => setMobileMenuOpen(true)}
+            style={{ marginRight: 8 }}
+          >☰</button>
+
           <h1 className="page-title">{PAGE_TITLES[activePage]}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div className="desktop-only" style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'var(--surface-2)', borderRadius: 7,
-              padding: '5px 12px', fontSize: 12, color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
-            }}>
-              📅 Wk 5 May 2026
-            </div>
-            <button className="btn btn-primary btn-sm" onClick={() => { setActivePage('drivers'); }}>
-  + Add Driver
-</button>
-          </div>
+
+          {/* Desktop date badge only */}
+          <div className="desktop-only" style={{
+  display: 'flex', alignItems: 'center', gap: 6,
+  background: 'var(--surface-2)', borderRadius: 7,
+  padding: '5px 12px', fontSize: 12, color: 'var(--text-secondary)',
+  border: '1px solid var(--border)',
+}}>
+  📅 {new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+</div>
         </header>
+
         <main className="page-body" id="main-content">
           {renderPage()}
         </main>
