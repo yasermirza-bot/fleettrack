@@ -286,6 +286,15 @@ html, body {
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .card {
+    overflow-x: auto;
+  }
+  .data-table {
+    min-width: 600px;
+  }
+}
+
 .card-header {
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
