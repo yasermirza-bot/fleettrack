@@ -120,9 +120,9 @@ export default function Home() {
       {/* Mobile sidebar — separate from desktop, only renders when open */}
       {mobileMenuOpen && (
         <nav className="sidebar" style={{
-          position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
-          width: 'var(--sidebar-width, 240px)',
-        }} aria-label="Mobile navigation">
+  position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
+  width: '260px',
+}} aria-label="Mobile navigation">
           <div className="sidebar-brand">
             <div className="sidebar-logo">🚗</div>
             <div>
